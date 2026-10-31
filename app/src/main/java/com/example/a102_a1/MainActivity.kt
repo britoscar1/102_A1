@@ -9,8 +9,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +38,25 @@ fun getAgeGroup(age: Int): String {
         else -> "Senior"
     }
     return ageGroup
+}
+
+// CHALLENGE 1 SESSION 2
+fun addFriend(friendList: MutableList<String>, newFriend: String) {
+    if (newFriend !in friendList){
+        friendList.add(newFriend)
+    }
+    else{
+        print("This friend is already on the list")
+    }
+}
+
+fun removeFriend(friendList: MutableList<String>, friendName: String) {
+    if (friendName in friendList){
+        friendList.remove(friendName)
+    }
+    else{
+        print("This friend is not on the list")
+    }
 }
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,7 +96,9 @@ fun UserProfileScreen() {
             ageGroup,
             friends = friends,
             onLike = {like ++},
-            onChangeUsername = { username = "@newUser123"}
+            onChangeUsername = { username = "@newUser123"},
+            onAddFriend = { addFriend(friends, "Sofia")},
+            onRemoveFriend = { removeFriend(friends, "Sofia")}
         )
     }
 }
@@ -90,8 +115,12 @@ fun ProfileContent(
     ageGroup: String,
     friends: List<String>,
     onLike: () -> Unit,
-    onChangeUsername: () -> Unit)
-{
+    onChangeUsername: () -> Unit,
+    onAddFriend: () -> Unit,
+    onRemoveFriend: () -> Unit
+) {
+    var showFriends by remember { mutableStateOf(false)}
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -128,14 +157,56 @@ fun ProfileContent(
             modifier = Modifier.padding(5.dp))
         Text(text = "Likes: $likesCount",
             modifier = Modifier.padding(5.dp))
-        Text(text = "Verified: ${if (isVerified) "✅" else "❌"}")
+        Text(text = "Verified: ${if (isVerified) "✅" else "❌"}",
+            modifier = Modifier.padding(5.dp))
+        Text(text = "Age Group: $ageGroup",
+            modifier = Modifier.padding(5.dp))
+
+        Row(
+           verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onLike) {
+                Icon(imageVector = Icons.Filled.ThumbUp,
+                    contentDescription = "Like")
+            }
+            Text(text = "$likesCount")
+        }
 
         Row {
-            Button(onClick = onLike) {
-                Text("Like")
-            }
+//            Button(onClick = onLike) {
+//                Text("Like")
+//            }
             Button(onClick = onChangeUsername) {
                 Text("Change Username")
+            }
+        }
+
+
+
+        Row( modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp,0.dp,20.dp)
+        ) {
+            Button(onClick = onRemoveFriend,
+                modifier = Modifier.weight(1f)) {
+                Text("Remove Friend")
+            }
+            Button(onClick = onAddFriend,
+                modifier = Modifier.weight(1f)) {
+                Text("Add Friend")
+            }
+        }
+
+        Button(onClick = {showFriends = !showFriends}) {
+            Text(if(showFriends) "Hide Friends" else "Show Friends")
+        }
+
+        if (showFriends) {
+            Text(text = "Friends: (${friends.size}): ",
+                modifier = Modifier.padding(5.dp))
+            friends.forEach { friend ->
+                Text(text = friend,
+                    modifier = Modifier.padding(5.dp))
             }
         }
     }
